@@ -16,10 +16,9 @@ CATARACT_GDRIVE_FILE_ID = '1RSueSXHQ3TsyZIf87X7Gs_tuZkyzSGy4'
 BRAIN_TUMOR_MODEL_PATH = 'brain_tumor_classification_model.h5'
 BRAIN_TUMOR_GDRIVE_FILE_ID = '1BvUvAZcoxXK_PpsiaZuWPwnM5vHe0Xyg'
 
-HEART_DISEASE_MODEL_PATH = 'decision_tree_model.pkl'
+HEART_DISEASE_MODEL_PATH = '/mnt/data/decision_tree_model.pkl'
 
 # Function to download model if not already downloaded
-@st.cache_resource
 def load_model(model_path, gdrive_file_id=None):
     if gdrive_file_id:
         if not os.path.exists(model_path):
