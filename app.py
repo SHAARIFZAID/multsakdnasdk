@@ -16,7 +16,7 @@ CATARACT_GDRIVE_FILE_ID = '1RSueSXHQ3TsyZIf87X7Gs_tuZkyzSGy4'
 BRAIN_TUMOR_MODEL_PATH = 'brain_tumor_classification_model.h5'
 BRAIN_TUMOR_GDRIVE_FILE_ID = '1BvUvAZcoxXK_PpsiaZuWPwnM5vHe0Xyg'
 
-HEART_DISEASE_MODEL_PATH = '/mnt/data/decision_tree_model.pkl'
+HEART_DISEASE_MODEL_PATH = 'decision_tree_model.pkl'
 
 # Function to download model if not already downloaded
 def load_model(model_path, gdrive_file_id=None):
@@ -42,9 +42,17 @@ heart_model = load_model(HEART_DISEASE_MODEL_PATH)
 scaler = StandardScaler()
 
 # Load the heart disease dataset to fit the scaler (assuming the data format hasn't changed)
-heart_data = pd.read_csv('/mnt/data/heart.csv')
+heart_data = pd.read_csv('heart.csv')
 X = heart_data.drop(columns=['target'])
 scaler.fit(X)  # Fit scaler to the feature columns
+
+# Function to preprocess image
+def preprocess_image(image, target_size):
+    image = image.resize(target_size)
+    image = img_to_array(image)
+    image = np.expand_dims(image, axis=0)  # Add batch dimension
+    image = image / 255.0  # Normalize to [0, 1]
+    return image
 
 # Sidebar for navigation
 st.sidebar.title("Medical Imaging Detection")
