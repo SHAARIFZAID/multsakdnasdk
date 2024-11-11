@@ -6,6 +6,7 @@ import numpy as np
 import gdown
 import os
 import pickle
+import joblib  # Import joblib for loading models
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
@@ -26,8 +27,12 @@ def load_model(model_path, gdrive_file_id=None):
             gdown.download(url, model_path, quiet=False)
         model = tf.keras.models.load_model(model_path)
     else:
-        with open(model_path, 'rb') as file:
-            model = pickle.load(file)
+        # Attempt to load with joblib, if pickle fails
+        try:
+            with open(model_path, 'rb') as file:
+                model = pickle.load(file)
+        except pickle.UnpicklingError:
+            model = joblib.load(model_path)  # Load with joblib if pickle fails
     return model
 
 # Load existing models
