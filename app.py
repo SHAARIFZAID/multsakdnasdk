@@ -79,11 +79,55 @@ def preprocess_image(image, target_size):
     return image
 
 # Sidebar for navigation
-st.sidebar.title("Medical Imaging Detection")
-app_mode = st.sidebar.selectbox("Choose a Detection Mode", ["Cataract Detection", "Brain Tumor Detection", "Heart Disease Prediction", "Diabetes Prediction"])
+st.sidebar.title("Medical Imaging and Disease Prediction App")
+app_mode = st.sidebar.selectbox("Choose a Section", ["About the App", "Cataract Detection", "Brain Tumor Detection", "Heart Disease Prediction", "Diabetes Prediction"])
+
+# About the App Section
+if app_mode == "About the App":
+    st.title("About the Medical Imaging and Disease Prediction App")
+    st.write("""
+        This application provides predictive insights on four different medical conditions using machine learning models. 
+        Below is a brief overview of each condition and the model used for its detection:
+    """)
+    
+    st.subheader("1. Cataract Detection")
+    st.write("""
+        **Disease Overview**: Cataracts cause clouding in the eye's natural lens, leading to vision impairment. 
+        They are common in older adults and can lead to blindness if untreated.
+        
+        **Model Used**: A Convolutional Neural Network (CNN) model trained on eye images is used to classify the images as 
+        "Cataract-positive" or "Cataract-negative". Users upload an eye image, and the model processes it to make a prediction.
+    """)
+
+    st.subheader("2. Brain Tumor Detection")
+    st.write("""
+        **Disease Overview**: Brain tumors can be malignant or benign and vary in type. Common types include gliomas, meningiomas, 
+        and pituitary tumors. Early detection is critical for effective treatment.
+
+        **Model Used**: A CNN model trained on MRI images is used to classify brain scans into four categories: 
+        "Glioma Tumor", "Meningioma Tumor", "No Tumor", and "Pituitary Tumor". Users upload an MRI image, and the model provides a prediction.
+    """)
+
+    st.subheader("3. Heart Disease Prediction")
+    st.write("""
+        **Disease Overview**: Heart disease encompasses a range of cardiovascular conditions, including coronary artery disease. 
+        It’s a leading cause of death globally, and early prediction can be lifesaving.
+
+        **Model Used**: A Decision Tree Classifier model is used to predict heart disease based on structured health information 
+        (e.g., age, blood pressure, cholesterol levels). The model is trained on-the-fly using the provided dataset.
+    """)
+
+    st.subheader("4. Diabetes Prediction")
+    st.write("""
+        **Disease Overview**: Diabetes is a chronic condition where the body either does not produce enough insulin or cannot effectively 
+        use the insulin it produces. Early prediction can help manage and mitigate severe complications.
+
+        **Model Used**: A Naive Bayes model is used to predict the likelihood of diabetes based on various health indicators 
+        (e.g., glucose level, BMI, age). This model is also trained on-the-fly using the provided dataset.
+    """)
 
 # Cataract Detection Section
-if app_mode == "Cataract Detection":
+elif app_mode == "Cataract Detection":
     st.title("Cataract Detection")
     
     uploaded_file = st.file_uploader("Upload an eye image", type=["jpg", "jpeg", "png"])
@@ -139,6 +183,7 @@ elif app_mode == "Heart Disease Prediction":
     thalach = st.number_input("Maximum Heart Rate Achieved", min_value=60, max_value=220, value=150)
     exang = st.selectbox("Exercise Induced Angina (1 = Yes, 0 = No)", options=[1, 0])
     oldpeak = st.number_input("ST Depression Induced by Exercise", min_value=0.0, max_value=10.0, value=1.0)
+    # Continuation of Heart Disease Prediction Section
     slope = st.selectbox("Slope of the Peak Exercise ST Segment (0-2)", options=[0, 1, 2])
     ca = st.selectbox("Number of Major Vessels Colored by Flourosopy (0-3)", options=[0, 1, 2, 3])
     thal = st.selectbox("Thalassemia (1 = Normal; 2 = Fixed Defect; 3 = Reversible Defect)", options=[1, 2, 3])
@@ -174,3 +219,4 @@ elif app_mode == "Diabetes Prediction":
     if st.button("Predict"):
         prediction = diabetes_model.predict(input_data)[0]
         st.write("Prediction: Diabetes Positive" if prediction == 1 else "Prediction: No Diabetes")
+
