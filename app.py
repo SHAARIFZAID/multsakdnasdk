@@ -5,9 +5,9 @@ from PIL import Image
 import numpy as np
 import gdown
 import os
-import pickle
-import joblib  # Import joblib for loading models
 import pandas as pd
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 # Google Drive file IDs for each model
@@ -17,8 +17,6 @@ CATARACT_GDRIVE_FILE_ID = '1RSueSXHQ3TsyZIf87X7Gs_tuZkyzSGy4'
 BRAIN_TUMOR_MODEL_PATH = 'brain_tumor_classification_model.h5'
 BRAIN_TUMOR_GDRIVE_FILE_ID = '1BvUvAZcoxXK_PpsiaZuWPwnM5vHe0Xyg'
 
-HEART_DISEASE_MODEL_PATH = 'decision_tree_model.pkl'
-
 # Function to download model if not already downloaded
 def load_model(model_path, gdrive_file_id=None):
     if gdrive_file_id:
@@ -26,13 +24,6 @@ def load_model(model_path, gdrive_file_id=None):
             url = f'https://drive.google.com/uc?id={gdrive_file_id}'
             gdown.download(url, model_path, quiet=False)
         model = tf.keras.models.load_model(model_path)
-    else:
-        # Attempt to load with joblib, if pickle fails
-        try:
-            with open(model_path, 'rb') as file:
-                model = pickle.load(file)
-        except pickle.UnpicklingError:
-            model = joblib.load(model_path)  # Load with joblib if pickle fails
     return model
 
 # Load existing models
@@ -42,14 +33,23 @@ brain_tumor_model = load_model(BRAIN_TUMOR_MODEL_PATH, BRAIN_TUMOR_GDRIVE_FILE_I
 # Class labels for brain tumor model
 BRAIN_TUMOR_CLASSES = ['Glioma Tumor', 'Meningioma Tumor', 'No Tumor', 'Pituitary Tumor']
 
-# Load heart disease prediction model and scaler
-heart_model = load_model(HEART_DISEASE_MODEL_PATH)
-scaler = StandardScaler()
+# Load and train the heart disease decision tree model on-the-fly
+@st.cache_resource
+def train_heart_disease_model():
+    heart_data = pd.read_csv('heart.csv')
+    X = heart_data.drop(columns=['target'])
+    y = heart_data['target']
 
-# Load the heart disease dataset to fit the scaler (assuming the data format hasn't changed)
-heart_data = pd.read_csv('heart.csv')
-X = heart_data.drop(columns=['target'])
-scaler.fit(X)  # Fit scaler to the feature columns
+    # Scale the features
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
+    
+    # Train a decision tree classifier
+    model = DecisionTreeClassifier(random_state=42)
+    model.fit(X, y)
+    return model, scaler
+
+heart_model, heart_scaler = train_heart_disease_model()
 
 # Function to preprocess image
 def preprocess_image(image, target_size):
@@ -124,9 +124,9 @@ elif app_mode == "Heart Disease Prediction":
     ca = st.selectbox("Number of Major Vessels Colored by Flourosopy (0-3)", options=[0, 1, 2, 3])
     thal = st.selectbox("Thalassemia (1 = Normal; 2 = Fixed Defect; 3 = Reversible Defect)", options=[1, 2, 3])
 
-    # Prediction
+    # Prepare input data for prediction
     input_data = np.array([[age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
-    input_data = scaler.transform(input_data)  # Scale the input data
+    input_data = heart_scaler.transform(input_data)  # Scale the input data
 
     if st.button("Predict"):
         prediction = heart_model.predict(input_data)[0]
