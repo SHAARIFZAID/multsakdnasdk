@@ -7,6 +7,7 @@ import gdown
 import os
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
@@ -51,6 +52,24 @@ def train_heart_disease_model():
 
 heart_model, heart_scaler = train_heart_disease_model()
 
+# Load and train the diabetes Naive Bayes model on-the-fly
+@st.cache_resource
+def train_diabetes_model():
+    diabetes_data = pd.read_csv('diabetes_dataset.csv')
+    X = diabetes_data.drop(columns=['Outcome'])
+    y = diabetes_data['Outcome']
+
+    # Scale the features
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
+    
+    # Train a Naive Bayes classifier
+    model = GaussianNB()
+    model.fit(X, y)
+    return model, scaler
+
+diabetes_model, diabetes_scaler = train_diabetes_model()
+
 # Function to preprocess image
 def preprocess_image(image, target_size):
     image = image.resize(target_size)
@@ -61,7 +80,7 @@ def preprocess_image(image, target_size):
 
 # Sidebar for navigation
 st.sidebar.title("Medical Imaging Detection")
-app_mode = st.sidebar.selectbox("Choose a Detection Mode", ["Cataract Detection", "Brain Tumor Detection", "Heart Disease Prediction"])
+app_mode = st.sidebar.selectbox("Choose a Detection Mode", ["Cataract Detection", "Brain Tumor Detection", "Heart Disease Prediction", "Diabetes Prediction"])
 
 # Cataract Detection Section
 if app_mode == "Cataract Detection":
@@ -131,3 +150,27 @@ elif app_mode == "Heart Disease Prediction":
     if st.button("Predict"):
         prediction = heart_model.predict(input_data)[0]
         st.write("Prediction: Heart Disease" if prediction == 1 else "Prediction: No Heart Disease")
+
+# Diabetes Prediction Section
+elif app_mode == "Diabetes Prediction":
+    st.title("Diabetes Prediction")
+    
+    st.write("Please enter the following information:")
+    
+    # Collecting user input based on diabetes dataset
+    pregnancies = st.number_input("Pregnancies", min_value=0, max_value=20, value=1)
+    glucose = st.number_input("Glucose Level", min_value=0, max_value=200, value=120)
+    blood_pressure = st.number_input("Blood Pressure", min_value=0, max_value=150, value=70)
+    skin_thickness = st.number_input("Skin Thickness", min_value=0, max_value=100, value=20)
+    insulin = st.number_input("Insulin Level", min_value=0, max_value=900, value=85)
+    bmi = st.number_input("BMI", min_value=0.0, max_value=70.0, value=25.0)
+    dpf = st.number_input("Diabetes Pedigree Function", min_value=0.0, max_value=2.5, value=0.5)
+    age = st.number_input("Age", min_value=1, max_value=120, value=30)
+
+    # Prepare input data for prediction
+    input_data = np.array([[pregnancies, glucose, blood_pressure, skin_thickness, insulin, bmi, dpf, age]])
+    input_data = diabetes_scaler.transform(input_data)  # Scale the input data
+
+    if st.button("Predict"):
+        prediction = diabetes_model.predict(input_data)[0]
+        st.write("Prediction: Diabetes Positive" if prediction == 1 else "Prediction:
