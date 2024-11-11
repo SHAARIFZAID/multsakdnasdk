@@ -173,4 +173,4 @@ elif app_mode == "Diabetes Prediction":
 
     if st.button("Predict"):
         prediction = diabetes_model.predict(input_data)[0]
-        st.write("Prediction: Diabetes Positive" if prediction == 1 else "Prediction:
+        st.write("Prediction: Diabetes Positive" if prediction == 1 else "Prediction: No Diabetes")
